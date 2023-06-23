@@ -26,6 +26,9 @@ def main():
     number = int(number.strip())
     # factorize the number and print the result
     p, q = factorize(number)
+    # check if p is larger than q and swap them if needed
+    if p > q:
+      p, q = q, p
     print(f"{number}={p}*{q}")
 
 if __name__ == "__main__":
