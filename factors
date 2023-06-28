@@ -1,33 +1,78 @@
 #!/usr/bin/python3
 
-import sys
+import random
+import math
 
-# check if a file name is given as argument
-if len(sys.argv) != 2:
-    print("Usage: factors <file>")
-    exit(1)
 
-# open the file and read the numbers
-try:
-    with open(sys.argv[1], "r") as f:
-        numbers = [int(line.strip()) for line in f]
-except (IOError, ValueError) as e:
-    print("Error: invalid file or content")
-    exit(2)
+def gcd(a, b):
+    '''Returns the greatest common divisor of two numbers.
+    '''
+    while b != 0:
+        a, b = b, a % b
+    return a
 
-# define a function to find a factor of a number
-def find_factor(n):
-    # try all possible factors from 2 to sqrt(n)
-    for i in range(2, int(n**0.5) + 1):
-        # if i divides n, return i and n/i
-        if n % i == 0:
-            return i, n // i
-    # if no factor is found, return 1 and n
-    return 1, n
 
-# loop through the numbers and print their factorization
-for n in numbers:
-    # find a factor of n
-    p, q = find_factor(n)
-    # print the result in the format n=p*q
-    print("{}={}*{}".format(n, p, q))
+def pollard_rho(num):
+    '''Uses the Pollard's rho algorithm to find a factor of a number.
+       Args:
+           num: input integer.
+           Return: A factor of the number if the number is not a prime.
+                   None if the number is prime or 1.
+    '''
+    # Check if the number is even
+    if num % 2 == 0:
+        return 2
+    # Check if the number is 1
+    if num == 1:
+        return None
+    # Pick a random number between 1 and num - 1
+    x = random.randint(1, num - 1)
+    # Initialize y to be equal to x
+    y = x
+    # Initialize c to be a random number between 1 and num - 1
+    c = random.randint(1, num - 1)
+    # Initialize d to be 1
+    d = 1
+    # Loop until d is not 1 or num
+    while d == 1:
+        # Update x using the function f(x) = x^2 + c mod num
+        x = (x * x + c) % num
+        # Update y twice using the same function
+        y = (y * y + c) % num
+        y = (y * y + c) % num
+        # Compute the absolute difference between x and y
+        diff = abs(x - y)
+        # Compute the gcd of diff and num
+        d = gcd(diff, num)
+        # If d is a factor of num, return it
+        if d != 1 and d != num:
+            return d
+    # If d is equal to num, the number is probably prime
+    if d == num:
+        return None
+
+
+if __name__ == "__main__":
+    '''Reads the input file.
+    '''
+    import sys
+
+    if len(sys.argv) != 2:
+        print("Usage: factors <file>")
+        exit()
+
+    input_file = sys.argv[1]
+
+    try:
+        # Use a generator expression to read thelines from the file as integers
+        nums = (int(line.strip()) for line in open(input_file))
+    except FileNotFoundError:
+        print("File not found")
+        exit()
+
+    for num in nums:
+        # Factorize number using pollard_rho andprint result in format n=p*q
+        p = pollard_rho(num)
+        if p:
+            q = num//p
+            print(f"{num}={p}*{q}")
